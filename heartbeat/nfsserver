@@ -17,6 +17,9 @@ DEFAULT_NOTIFY_CMD="/sbin/sm-notify"
 DEFAULT_NOTIFY_FOREGROUND="false"
 DEFAULT_RPCPIPEFS_DIR="/var/lib/nfs/rpc_pipefs"
 EXEC_MODE=0
+SELINUX_ENABLED=-1
+STATD_PATH="/var/lib/nfs"
+STATD_DIR=""
 
 nfsserver_meta_data() {
 	cat <<END
@@ -167,6 +170,12 @@ else
 	rpcpipefs_umount_dir=${OCF_RESKEY_rpcpipefs_dir}
 fi
 
+# Use statd folder if it exists
+if [ -d "/var/lib/nfs/statd" ]; then
+	STATD_DIR="statd"
+	STATD_PATH="/var/lib/nfs/statd"
+fi
+
 ##
 # EXEC_MODE values
 # 1  user init script or default init script
@@ -253,11 +262,30 @@ nfsserver_monitor ()
 prepare_directory ()
 {
 	[ -d "$fp" ] || mkdir -p $fp
-	[ -d "$rpcpipefs_make_dir" ] || mkdir -p $rpcpipefs_make_dir
-	[ -d "$fp/sm" ] || mkdir -p $fp/sm
-	[ -d "$fp/sm.ha" ] || mkdir -p $fp/sm.ha
-	[ -d "$fp/sm.bak" ] || mkdir -p $fp/sm.bak
+
+	[ -d "$fp/$STATD_DIR" ] || mkdir -p "$fp/$STATD_DIR"
 	[ -d "$fp/v4recovery" ] || mkdir -p $fp/v4recovery
+	[ -d "$rpcpipefs_make_dir" ] || mkdir -p $rpcpipefs_make_dir
+
+	#
+	# Create our own private copy which we use for notifies.
+	# This way, we can be sure to advertise on possibly multiple
+	# IP addresses.
+	#
+	[ -d "$fp/$STATD_DIR/sm" ] || mkdir -p "$fp/$STATD_DIR/sm"
+	[ -d "$fp/$STATD_DIR/sm.bak" ] || mkdir -p "$fp/$STATD_DIR/sm.bak"
+	[ -d "$fp/$STATD_DIR/sm-ha" ] || mkdir -p "$fp/$STATD_DIR/sm-ha"
+	[ -n "`id -u rpcuser`" -a "`id -g rpcuser`" ] && chown -R rpcuser.rpcuser "$fp/$STATD_DIR"
+
+	[ $SELINUX_ENABLED ] && chcon -R "$SELINUX_LABEL" "$fp"
+
+	#
+	# Generate a random state file.  If this ends up being what a client
+	# already has in its list, that's bad, but the chances of this
+	# are small - and relocations should be rare.
+	#
+	dd if=/dev/urandom of=$fp/state bs=1 count=4 &> /dev/null
+	[ -n "`id -u rpcuser`" -a "`id -g rpcuser`" ] && chown rpcuser.rpcuser "$fp/state"
 }
 
 is_bound ()
@@ -273,6 +301,7 @@ bind_tree ()
 		return 0
 	fi
 	mount --bind $fp /var/lib/nfs
+	[ $SELINUX_ENABLED ] && restorecon /var/lib/nfs
 }
 
 unbind_tree ()
@@ -287,16 +316,26 @@ unbind_tree ()
 
 nfsserver_start ()
 {
+
 	if nfsserver_monitor; then
 		ocf_log debug "NFS server is already started"
 		return $OCF_SUCCESS
 	fi
 
-	prepare_directory
+	# SELinux information. We are taking the permissions from
+	# the current statd dir and applying it to the HA one that is
+	# being mounted in its place.
+	which restorecon &> /dev/null && selinuxenabled
+	SELINUX_ENABLED=$?
+	if [ $SELINUX_ENABLED ]; then
+		export SELINUX_LABEL="$(ls -ldZ $STATD_PATH | cut -f4 -d' ')"
+	fi
+
+	prepare_directory $STATD_DIR
 	bind_tree
 
-	rm -rf /var/lib/nfs/sm.ha/* > /dev/null 2>&1
-	cp -rf /var/lib/nfs/sm /var/lib/nfs/sm.bak /var/lib/nfs/state /var/lib/nfs/sm.ha > /dev/null 2>&1
+	rm -rf $STATD_PATH/sm.ha/* > /dev/null 2>&1
+	cp -rf $STATD_PATH/sm $STATD_PATH/sm.bak /var/lib/nfs/state $STATD_PATH/sm.ha > /dev/null 2>&1
 
 	ocf_log info "Starting NFS server ..."
 
@@ -339,12 +378,12 @@ nfsserver_start ()
 
 	esac
 
-	rm -rf /var/lib/nfs/sm.ha.save > /dev/null 2>&1
-	cp -rf /var/lib/nfs/sm.ha /var/lib/nfs/sm.ha.save > /dev/null 2>&1
+	rm -rf $STATD_PATH/sm.ha.save > /dev/null 2>&1
+	cp -rf $STATD_PATH/sm.ha $STATD_PATH/sm.ha.save > /dev/null 2>&1
 	for ip in `echo ${OCF_RESKEY_nfs_ip} | sed 's/,/ /g'`; do
-	  ${OCF_RESKEY_nfs_notify_cmd} $opts $ip -P /var/lib/nfs/sm.ha
-	  rm -rf /var/lib/nfs/sm.ha > /dev/null 2>&1
-	  cp -rf /var/lib/nfs/sm.ha.save /var/lib/nfs/sm.ha > /dev/null 2>&1
+	  ${OCF_RESKEY_nfs_notify_cmd} $opts $ip -P $STATD_PATH/sm.ha
+	  rm -rf $STATD_PATH/sm.ha > /dev/null 2>&1
+	  cp -rf $STATD_PATH/sm.ha.save $STATD_PATH/sm.ha > /dev/null 2>&1
 	done
 
 
