@@ -149,6 +149,18 @@ This port will be used in the qemu migrateuri. If unset, the port will be a rand
 <content type="integer" />
 </parameter>
 
+<parameter name="snapshot">
+<longdesc lang="en">
+Path to the snapshot directory where the virtual machine image will be stored.  When this 
+parameter is set, the virtual machine's RAM state will be saved to a file in the snapshot
+directory when stopped.  If on start a state file is present for the domain, the domain
+will be restored to the same state it was in right before it stopped last.
+</longdesc>
+<shortdesc lang="en">
+Restore state on start/stop
+</shortdesc>
+<content type="string" default=""/>
+</parameter>
 </parameters>
 
 <actions>
@@ -282,9 +294,22 @@ VirtualDomain_Status() {
 }
 
 VirtualDomain_Start() {
+    local snapshotimage
+
     if VirtualDomain_Status; then
 	ocf_log info "Virtual domain $DOMAIN_NAME already running."
 	return $OCF_SUCCESS
+    fi
+
+    snapshotimage="$OCF_RESKEY_snapshot/${DOMAIN_NAME}.state"
+    if [ -n "$OCF_RESKEY_snapshot" -a -f "$snapshotimage" ]; then
+        virsh restore $snapshotimage
+        if [ $? -eq 0 ]; then
+            rm -f $snapshotimage
+            return $OCF_SUCCESS
+        fi
+        ocf_log error "Failed to restore ${DOMAIN_NAME} from state file in ${OCF_RESKEY_snapshot} directory."
+        return $OCF_ERR_GENERIC
     fi
 
     virsh $VIRSH_OPTIONS start ${DOMAIN_NAME}
@@ -311,6 +336,14 @@ VirtualDomain_Stop() {
 
     case $status in
 	$OCF_SUCCESS)
+        if [ -n "$OCF_RESKEY_snapshot" ]; then
+            virsh save $DOMAIN_NAME "$OCF_RESKEY_snapshot/${DOMAIN_NAME}.state"
+            if [ $? -eq 0 ]; then
+                return $OCF_SUCCESS
+            fi
+            ocf_log error "Failed to save snapshot state of ${DOMAIN_NAME} on stop"
+        fi
+
 	    if ! ocf_is_true $OCF_RESKEY_force_stop; then
 		# Issue a graceful shutdown request
 		ocf_log info "Issuing graceful shutdown request for domain ${DOMAIN_NAME}."
