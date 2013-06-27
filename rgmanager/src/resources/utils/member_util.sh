@@ -28,8 +28,27 @@
 # If a node was not found, the old version would return '2', but the only
 # consumer of this function never cared about that value.
 #
+
+get_fqdn()
+{
+	node=$1
+	while read ip fqdn alias; do
+		for entry in $alias; do
+			if [ "$entry" = "$node" ]; then
+				echo $fqdn
+				return 0
+			fi
+		done
+	done < /etc/hosts
+	return 1
+}
+
 is_node_member_clustat()
 {
+	local mem_list
+	local res
+	local node=$1
+	local node_fqdn
 	# Still having a tag while (a) online but (b) not running pacemaker 
 	# (e.g. crm_node) or rgmanager not considered adequate for things like
 	# the LVM agent - so we use corosync-quorumtool instead.  The function
@@ -51,10 +70,25 @@ is_node_member_clustat()
 	#           1          1 rhel7-1.priv.redhat.com
 	#           2          1 rhel7-2.priv.redhat.com
 	#
-	corosync-quorumtool -l | grep -v "^Nodeid" | grep -i " $1\$" &> /dev/null
-	return $?
-}
+	mem_list=$(corosync-quorumtool -l)
 
+	# see if the node is in the member list.
+	echo "$mem_list" | grep -v "^Nodeid" | grep -i " $node\$" &> /dev/null
+	res=$?
+	if [ $res -eq 0 ]; then
+		return $res
+	fi
+
+	# if the node is not found, see if we can determine a fqdn for the node
+	# and check that against the member list.
+	node_fqdn=$(get_fqdn $node)
+	if [ -n "$node_fqdn" ]; then
+		echo "$mem_list" | grep -v "^Nodeid" | grep -i " $node_fqdn\$" &> /dev/null
+		res=$?
+	fi
+
+	return $res
+}
 
 #
 # Print the local node name to stdout
