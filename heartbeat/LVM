@@ -394,11 +394,12 @@ retry_exclusive_start()
 		case $2 in
 		????ao*)
 			# open LVs cannot be deactivated.
-			return $OCF_ERR_GENERIC;;
+			break
+			;;
 		*)
 			if ! lvchange -an $OCF_RESKEY_volgrpname/$1; then
-				ocf_log err "Unable to perform required deactivation of $OCF_RESKEY_volgrpname/$1 before starting"
-				return $OCF_ERR_GENERIC
+				ocf_log err "Unable to perform required deactivation of $OCF_RESKEY_volgrpname/$1 before starting... retrying."
+				break
 			fi
 			;;
 		esac
@@ -446,10 +447,20 @@ LVM_start() {
 		# This could be caused by a remotely active LV, Attempt
 		# to disable volume group cluster wide and try again.
 		# Allow for some settling
-		sleep 5
-		if ! retry_exclusive_start; then
-			return $OCF_ERR_GENERIC
-		fi
+		#
+		# We age going to keep trying for around a minute.
+		# We'll either get timed out by whatever is calling
+		# this agent, or we'll eventually give up.
+		for i in $(seq 12)
+		do
+			sleep 5
+			if LVM_status $vg; then
+				return $OCF_SUCCESS
+			fi
+			if retry_exclusive_start; then
+				break
+			fi
+		done
 	fi
 
 	if LVM_status $vg; then
