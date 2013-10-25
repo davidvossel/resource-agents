@@ -22,7 +22,7 @@ SETUP-AGENT
 
 CLEANUP-AGENT
 	rmdir $OCFT_dir
-	rm $OCFT_fs
+	rm -f $OCFT_fs
 	losetup -d $OCFT_loop
 
 CASE-BLOCK required_args

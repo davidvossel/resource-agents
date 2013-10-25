@@ -4,12 +4,8 @@
 CONFIG
 	Agent apache
 	AgentRoot /usr/lib/ocf/resource.d/heartbeat
-	InstallPackage apache2
+	InstallPackage httpd
         HangTimeout 20
-
-SETUP-AGENT
-	/etc/init.d/apache2 start
-	/etc/init.d/apache2 stop
 
 CASE-BLOCK default_status
 	AgentRun stop
