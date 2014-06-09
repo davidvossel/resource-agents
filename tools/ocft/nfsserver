@@ -3,14 +3,13 @@
 CONFIG
 	Agent nfsserver
 	AgentRoot /usr/lib/ocf/resource.d/heartbeat
-	InstallPackage nfs-kernel-server
+	InstallPackage nfs-utils
 	HangTimeout 20
 
 CASE-BLOCK required_args
-	Env OCF_RESKEY_nfs_init_script=/etc/init.d/nfsserver
 	Env OCF_RESKEY_nfs_ip=127.0.0.1
 	Env OCF_RESKEY_nfs_shared_infodir=/var/lib/nfs
-	Env OCF_RESKEY_nfs_notify_cmd=/usr/sbin/sm-notify
+	Env OCF_RESKEY_nfs_init_script=/etc/init.d/nfs
 
 CASE-BLOCK default_status
 	AgentRun stop

@@ -3,12 +3,10 @@
 CONFIG
 	Agent IPsrcaddr
 	AgentRoot /usr/lib/ocf/resource.d/heartbeat
-	InstallPackage iproute2
 	HangTimeout 20
 
 CASE-BLOCK required_args
-	Env OCF_RESKEY_ipaddress= # put here your IP
-	Env OCF_RESKEY_cidr_netmask= # and the netmask
+	Env OCF_RESKEY_ipaddress=$(ip addr | grep "inet " | tail -n 1 | sed "s/\// /g" | awk '{print $2}')
 
 CASE-BLOCK default_status
 	AgentRun stop

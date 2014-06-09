@@ -4,14 +4,13 @@ CONFIG
 	Agent mysql
 	AgentRoot /usr/lib/ocf/resource.d/heartbeat
 	InstallPackage mysql
+	InstallPackage mysql-server
         HangTimeout 20
 
-SETUP-AGENT
-	/etc/init.d/mysql start
-	/etc/init.d/mysql stop
 
 CASE-BLOCK crm_setting
 	Env OCF_RESKEY_CRM_meta_timeout=15000
+	Env OCF_RESKEY_enable_creation=1
 
 CASE-BLOCK default_status
 	AgentRun stop

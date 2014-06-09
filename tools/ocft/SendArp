@@ -3,12 +3,11 @@
 CONFIG
 	Agent SendArp
 	AgentRoot /usr/lib/ocf/resource.d/heartbeat
-	InstallPackage resource-agents
 	HangTimeout 15
 
 CASE-BLOCK required_args
 	Env OCF_RESKEY_ip=127.0.0.1
-	Env OCF_RESKEY_nic=lo
+	Env OCF_RESKEY_nic=eth0
 	Env OCF_RESKEY_background=false
 
 CASE-BLOCK default_status

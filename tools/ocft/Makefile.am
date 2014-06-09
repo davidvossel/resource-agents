@@ -26,25 +26,12 @@ ocftcfgs_DATA      =  apache  	\
 			 IPaddr2	\
 			 IPaddr2v4	\
 			 IPaddr2v6	\
-			 IPv6addr	\
 			 Filesystem	\
 			 LVM	\
-		       	 Raid1	\
 			 IPsrcaddr  	\
-			 MailTo		\
-			 jboss	\
 		       	 mysql		\
-		       	 mysql-proxy		\
 		       	 pgsql		\
-		       	 db2		\
-		       	 oracle		\
-		       	 drbd.linbit		\
-		       	 exportfs	\
 		       	 nfsserver	\
-		       	 portblock	\
-		       	 iscsi	\
-		       	 named	\
-		       	 postfix	\
 			 tomcat	\
 		       	 Xinetd	\
 			 SendArp

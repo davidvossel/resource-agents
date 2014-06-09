@@ -5,8 +5,14 @@ CONFIG
 	AgentRoot /usr/lib/ocf/resource.d/heartbeat
 	InstallPackage xinetd
 
+SETUP-AGENT
+	service xinetd start
+
+CLEANUP-AGENT
+	service xinetd stop
+
 CASE-BLOCK required_args
-	Env OCF_RESKEY_service=discard
+	Env OCF_RESKEY_service=echo-stream
 
 CASE-BLOCK default_status
 	AgentRun stop

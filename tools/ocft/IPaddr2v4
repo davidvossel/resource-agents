@@ -135,13 +135,13 @@ CASE "error params with wrong ip"
 # Recommended to always specify both nic, cidr_netmask, and broadcast when you needed.
 # IPaddr2 in 3.9.3 was using a wrong subnet mask (constant of 32) in this case.
 #
-CASE "params with force nic"
-	Include prepare
-	Env OCF_RESKEY_nic=$OCFT_force_nic
-	Env OCFT_check_nic=$OCFT_force_nic
-	AgentRun start OCF_ERR_GENERIC
-	Include check_ip_removed
-	Unenv OCF_RESKEY_nic
+#CASE "params with force nic"
+#	Include prepare
+#	Env OCF_RESKEY_nic=$OCFT_force_nic
+#	Env OCFT_check_nic=$OCFT_force_nic
+#	AgentRun start OCF_ERR_GENERIC
+#	Include check_ip_removed
+#	Unenv OCF_RESKEY_nic
 
 # CASE No.10
 # Note: this result is different from IPaddr2 in 3.9.3.
@@ -163,16 +163,16 @@ CASE "params with force cidr_netmask (base netmask > assigned netmask)"
 # Recommended to always specify both nic, cidr_netmask, and broadcast when you needed.
 # IPaddr2 in 3.9.3 succeeded with using a calculated broadcast.
 #
-CASE "force to use the specified nic and cidr_netmask"
-	Include prepare
-	Env OCF_RESKEY_nic=$OCFT_force_nic
-	Env OCF_RESKEY_cidr_netmask=$OCFT_force_prefix
-	Env OCFT_check_nic=$OCFT_force_nic
-	Env OCFT_check_prefix=$OCFT_force_prefix
-	AgentRun start OCF_SUCCESS
-	AgentRun stop OCF_SUCCESS
-	Include check_ip_removed
-	Unenv OCF_RESKEY_cidr_netmask
+#CASE "force to use the specified nic and cidr_netmask"
+#	Include prepare
+#	Env OCF_RESKEY_nic=$OCFT_force_nic
+#	Env OCF_RESKEY_cidr_netmask=$OCFT_force_prefix
+#	Env OCFT_check_nic=$OCFT_force_nic
+#	Env OCFT_check_prefix=$OCFT_force_prefix
+#	AgentRun start OCF_SUCCESS
+#	AgentRun stop OCF_SUCCESS
+#	Include check_ip_removed
+#	Unenv OCF_RESKEY_cidr_netmask
 
 
 # CASE No.12
@@ -238,15 +238,15 @@ CASE "error params with wrong ip and cidr_netmask (not exist base_ip)"
 # Recommended to always specify both nic, cidr_netmask, and broadcast when you needed.
 # IPaddr2 in 3.9.3 succeeded with using a calculated broadcast.
 #
-CASE "force to use the specified nic and cidr_netmask"
-	Include prepare
-	Env OCF_RESKEY_nic=$OCFT_force_nic
-	Env OCF_RESKEY_cidr_netmask=$OCFT_force_prefix2
-	Env OCFT_check_prefix=$OCFT_force_prefix2
-	Env OCFT_check_nic=$OCFT_force_nic
-	AgentRun start OCF_SUCCESS
-	AgentRun stop OCF_SUCCESS
-	Include check_ip_removed
+#CASE "force to use the specified nic and cidr_netmask"
+#	Include prepare
+#	Env OCF_RESKEY_nic=$OCFT_force_nic
+#	Env OCF_RESKEY_cidr_netmask=$OCFT_force_prefix2
+#	Env OCFT_check_prefix=$OCFT_force_prefix2
+#	Env OCFT_check_nic=$OCFT_force_nic
+#	AgentRun start OCF_SUCCESS
+#	AgentRun stop OCF_SUCCESS
+#	Include check_ip_removed
 
 # CASE No.17
 # Note: this result is different from IPaddr2 in 3.9.3.
@@ -255,18 +255,18 @@ CASE "force to use the specified nic and cidr_netmask"
 # Recommended to always specify both nic, cidr_netmask, and broadcast when you needed.
 # IPaddr2 in 3.9.3 succeeded with using a calculated broadcast.
 #
-CASE "force to use the specified nic and cidr_netmask (not exist base_ip)"
-	Include prepare
-	Include base_ip_removed
-	Env OCF_RESKEY_nic=$OCFT_force_nic
-	Env OCF_RESKEY_cidr_netmask=$OCFT_force_prefix2
-	Env OCFT_check_prefix=$OCFT_force_prefix2
-	Env OCFT_check_nic=$OCFT_force_nic
-	AgentRun start OCF_SUCCESS
-	AgentRun stop OCF_SUCCESS
-	Unenv OCF_RESKEY_nic
-	Unenv OCF_RESKEY_cidr_netmask
-	Include base_ip_assigned
+#CASE "force to use the specified nic and cidr_netmask (not exist base_ip)"
+#	Include prepare
+#	Include base_ip_removed
+#	Env OCF_RESKEY_nic=$OCFT_force_nic
+#	Env OCF_RESKEY_cidr_netmask=$OCFT_force_prefix2
+#	Env OCFT_check_prefix=$OCFT_force_prefix2
+#	Env OCFT_check_nic=$OCFT_force_nic
+#	AgentRun start OCF_SUCCESS
+#	AgentRun stop OCF_SUCCESS
+#	Unenv OCF_RESKEY_nic
+#	Unenv OCF_RESKEY_cidr_netmask
+#	Include base_ip_assigned
 
 # CASE No.18
 #
@@ -290,34 +290,34 @@ CASE "params with broadcast, no nic, no cidr_netmask"
 
 # CASE No.20
 #
-CASE "force to use the specified nic and cidr_netmask"
-	Include prepare
-	Env OCF_RESKEY_nic=$OCFT_force_nic
-	Env OCF_RESKEY_cidr_netmask=$OCFT_force_prefix
-	Env OCF_RESKEY_broadcast=$OCFT_force_brd
-	Env OCFT_check_nic=$OCFT_force_nic
-	Env OCFT_check_prefix=$OCFT_force_prefix
-	AgentRun start OCF_SUCCESS
-	Include check_ip_assigned
-	AgentRun monitor OCF_SUCCESS
-	AgentRun stop OCF_SUCCESS
-	Include check_ip_removed
-	Unenv OCF_RESKEY_cidr_netmask
+#CASE "force to use the specified nic and cidr_netmask"
+#	Include prepare
+#	Env OCF_RESKEY_nic=$OCFT_force_nic
+#	Env OCF_RESKEY_cidr_netmask=$OCFT_force_prefix
+#	Env OCF_RESKEY_broadcast=$OCFT_force_brd
+#	Env OCFT_check_nic=$OCFT_force_nic
+#	Env OCFT_check_prefix=$OCFT_force_prefix
+#	AgentRun start OCF_SUCCESS
+#	Include check_ip_assigned
+#	AgentRun monitor OCF_SUCCESS
+#	AgentRun stop OCF_SUCCESS
+#	Include check_ip_removed
+#	Unenv OCF_RESKEY_cidr_netmask
 
 # CASE No.21
 #
-CASE "force to use the specified nic and cidr_netmask"
-	Include prepare
-	Include base_ip_removed
-	Env OCF_RESKEY_nic=$OCFT_force_nic
-	Env OCF_RESKEY_cidr_netmask=$OCFT_force_prefix2
-	Env OCF_RESKEY_broadcast=$OCFT_target_brd
-	Env OCFT_check_nic=$OCFT_force_nic
-	Env OCFT_check_prefix=$OCFT_force_prefix2
-	AgentRun start OCF_SUCCESS
-	Include check_ip_assigned
-	AgentRun monitor OCF_SUCCESS
-	AgentRun stop OCF_SUCCESS
-	Include check_ip_removed
-	Include base_ip_assigned
+#CASE "force to use the specified nic and cidr_netmask"
+#	Include prepare
+#	Include base_ip_removed
+#	Env OCF_RESKEY_nic=$OCFT_force_nic
+#	Env OCF_RESKEY_cidr_netmask=$OCFT_force_prefix2
+#	Env OCF_RESKEY_broadcast=$OCFT_target_brd
+#	Env OCFT_check_nic=$OCFT_force_nic
+#	Env OCFT_check_prefix=$OCFT_force_prefix2
+#	AgentRun start OCF_SUCCESS
+#	Include check_ip_assigned
+#	AgentRun monitor OCF_SUCCESS
+#	AgentRun stop OCF_SUCCESS
+#	Include check_ip_removed
+#	Include base_ip_assigned
 
