@@ -341,14 +341,28 @@ v3locking_exec()
 	set_exec_mode
 
 	if [ $EXEC_MODE -eq 2 ]; then
-		systemctl $cmd nfs-lock.service
-	else 
+		# rpc.statd has proven to be difficult to manage with 
+		# systemd. There are ways rpc.statd will start outside
+		# of systemd's control (like when a nfs client is mounted)
+		# This confuses systemd and can result in a unrecoverable
+		# state were we can neither start nor stop nfslock until
+		# after a server restart.
+		#
+		# To avoid this entirely, we don't let systemd manage rpc.statd
+		# at all. During start or stop, if systemd thinks it is controlling
+		# rpc.statd, stop it.
+		# In the case of "start" we'll restart rpc.statd under our
+		# control after we stop it under systemd's control.
 		case $cmd in
-			start) locking_start;;
-			stop) locking_stop;;
-			status) locking_status;;
+			start|stop) systemctl stop nfs-lock.service ;;
 		esac
-	fi
+	fi 
+
+	case $cmd in
+		start) locking_start;;
+		stop) locking_stop;;
+		status) locking_status;;
+	esac
 }
 
 nfsserver_monitor ()
