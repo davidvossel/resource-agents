@@ -449,7 +449,7 @@ ip_init() {
 			ocf_log warn "[$FINDIF] failed"
 			exit $OCF_SUCCESS
 		else
-			ocf_exit_reason "[$FINDIF] failed"
+			ocf_log err "[$FINDIF] failed"
 			exit $rc
 		fi
 	fi
