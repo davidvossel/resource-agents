@@ -141,8 +141,24 @@ remove_pid () {
 rmq_monitor() {
 	local rc
 
-	$RMQ_CTL cluster_status > /dev/null 2>&1
-	rc=$?
+	if [ "$__OCF_ACTION" = "monitor" ]; then
+		local tries=3
+
+		while [ $tries -gt 0 ]
+		do
+			$RMQ_CTL cluster_status > /dev/null 2>&1
+			rc=$?
+			if [ $rc -eq $OCF_SUCCESS ]; then
+				break
+			fi
+			tries=$(( $tries - 1 ))
+			sleep 1
+		done
+	else 
+		$RMQ_CTL cluster_status > /dev/null 2>&1
+		rc=$?
+	fi
+
 	case "$rc" in
 	0)
 		ocf_log debug "RabbitMQ server is running normally"
